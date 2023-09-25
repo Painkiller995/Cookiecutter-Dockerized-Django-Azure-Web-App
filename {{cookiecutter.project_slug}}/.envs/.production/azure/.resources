@@ -1,0 +1,25 @@
+# -------------------------
+# Azure resource group and location
+# -------------------------
+LOCATION={{ cookiecutter.azure_location }}
+RESOURCE_GROUP_NAME={{ cookiecutter.azure_res_group_name }}
+
+# -------------------------
+# Azure PostgreSQL Database configuration
+# Flexible server does not support cross subscription 
+# ------------------------------------------------------------------------------
+AZURE_POSTGRESQL_HOST={{ cookiecutter.azure_postgres_host }} # Server name must be no longer than 63 characters long
+AZURE_POSTGRESQL_DATABASE={{ cookiecutter.azure_postgres_database }}
+AZURE_POSTGRESQL_USERNAME={{ cookiecutter.azure_postgres_username }}
+AZURE_POSTGRESQL_PASSWORD={{ cookiecutter.azure_postgres_password }}
+
+# -------------------------
+# Azure Container Registry configuration
+# -------------------------
+ACR_NAME={{ cookiecutter.azure_container_registry_name }} # Registry name should be unique.
+
+# -------------------------
+# Azure Web App configuration
+# -------------------------
+APP_SERVICE_PLAN={{ cookiecutter.azure_app_service_plan }}
+WEB_APP_NAME={{ cookiecutter.azure_web_app_name }} # Web App name should be unique.
