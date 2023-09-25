@@ -1,0 +1,59 @@
+version: "3"
+
+volumes:
+  production_django_media: {}
+ 
+services:
+
+  django:{% if cookiecutter.use_celery == 'y' %} &django{% endif %}
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: {{ cookiecutter.azure_container_registry_name }}.azurecr.io/{{ cookiecutter.project_slug }}_production_django
+    volumes:
+      - production_django_media:/app/media
+    depends_on:
+      - redis
+    environment:
+      # Django
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      DJANGO_ADMIN_URL: ${DJANGO_ADMIN_URL}
+      # Redis - Celery
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      # Azure postgres sql
+      AZURE_POSTGRESQL_HOST: ${AZURE_POSTGRESQL_HOST}
+      AZURE_POSTGRESQL_DATABASE: ${AZURE_POSTGRESQL_DATABASE}
+      AZURE_POSTGRESQL_USERNAME: ${AZURE_POSTGRESQL_USERNAME}
+      AZURE_POSTGRESQL_PASSWORD: ${AZURE_POSTGRESQL_PASSWORD}
+    command: /start
+    ports:
+      - 80:8000
+      - 2222:2222
+
+  redis:
+    image: mcr.microsoft.com/oss/bitnami/redis:6.0.8
+    container_name: azureproject_production_redis
+    environment:
+      # Redis
+      ALLOW_EMPTY_PASSWORD: ${ALLOW_EMPTY_PASSWORD}
+    ports:
+      - "6379:6379"
+    
+  {%- if cookiecutter.use_celery == 'y' %}
+  
+  celeryworker:
+    <<: *django
+    image: {{ cookiecutter.azure_container_registry_name }}.azurecr.io/{{ cookiecutter.project_slug }}_production_celeryworker
+    command: /start-celeryworker
+    ports: []
+
+  celerybeat:
+    <<: *django
+    image: {{ cookiecutter.azure_container_registry_name }}.azurecr.io/{{ cookiecutter.project_slug }}_production_celerybeat
+    command: /start-celerybeat
+    ports: []
+
+  {%- endif %}
